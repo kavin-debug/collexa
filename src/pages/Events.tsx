@@ -1,0 +1,157 @@
+import { useEffect, useState } from 'react';
+import { fetchEvents, createEvent } from '@/services/events';
+import { useAuth } from '@/context/AuthContext';
+import { Navbar } from '@/components/Navbar';
+import { BottomNav } from '@/components/BottomNav';
+import { EventCard } from '@/components/EventCard';
+import { EventSearch } from '@/components/EventSearch';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Plus, Loader2 } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { EVENT_CATEGORIES, type CampusEvent, type EventCategory } from '@/types';
+import { PageTransition } from '@/components/motion/PageTransition';
+import { ScrollReveal } from '@/components/motion/ScrollReveal';
+import { CardGridSkeleton } from '@/components/LoadingSkeleton';
+
+const Events = () => {
+  const { user, isAdmin } = useAuth();
+  const { toast } = useToast();
+  const [events, setEvents] = useState<CampusEvent[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [open, setOpen] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
+  const [title, setTitle] = useState('');
+  const [date, setDate] = useState('');
+  const [category, setCategory] = useState<EventCategory>('Academic');
+  const [description, setDescription] = useState('');
+  const [location, setLocation] = useState('');
+
+  const [search, setSearch] = useState('');
+  const [filterCategory, setFilterCategory] = useState<EventCategory | 'All'>('All');
+
+  const load = async () => {
+    try {
+      setEvents(await fetchEvents());
+    } catch { /* Firebase may not be configured */ }
+    setLoading(false);
+  };
+
+  useEffect(() => { load(); }, []);
+
+  const handleCreate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) return;
+    setSubmitting(true);
+    try {
+      await createEvent({ title, date, category, description, location, createdBy: user.uid });
+      toast({ title: 'Event created!' });
+      setOpen(false);
+      setTitle(''); setDate(''); setDescription(''); setLocation('');
+      await load();
+    } catch (err: any) {
+      toast({ title: 'Error', description: err.message, variant: 'destructive' });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const filtered = events.filter((ev) => {
+    const matchesSearch = !search || ev.title.toLowerCase().includes(search.toLowerCase()) || ev.description.toLowerCase().includes(search.toLowerCase());
+    const matchesCategory = filterCategory === 'All' || ev.category === filterCategory;
+    return matchesSearch && matchesCategory;
+  });
+
+  return (
+    <PageTransition>
+      <div className="min-h-screen bg-background pb-20 md:pb-0">
+        <Navbar />
+        <div className="page-container">
+          <div className="mb-6 flex items-center justify-between">
+            <h1 className="section-title mb-0">Events</h1>
+            {isAdmin && (
+              <Dialog open={open} onOpenChange={setOpen}>
+                <DialogTrigger asChild>
+                  <Button className="transition-all hover:scale-[1.03]"><Plus className="mr-1 h-4 w-4" /> Add Event</Button>
+                </DialogTrigger>
+                <DialogContent className="glass-card border-border">
+                  <DialogHeader>
+                    <DialogTitle>New Event</DialogTitle>
+                  </DialogHeader>
+                  <form onSubmit={handleCreate} className="space-y-4">
+                    <div>
+                      <Label>Title</Label>
+                      <Input value={title} onChange={e => setTitle(e.target.value)} required className="mt-1" />
+                    </div>
+                    <div>
+                      <Label>Date</Label>
+                      <Input type="date" value={date} onChange={e => setDate(e.target.value)} required className="mt-1" />
+                    </div>
+                    <div>
+                      <Label>Location</Label>
+                      <Input value={location} onChange={e => setLocation(e.target.value)} className="mt-1" placeholder="Main Auditorium" />
+                    </div>
+                    <div>
+                      <Label>Category</Label>
+                      <Select value={category} onValueChange={v => setCategory(v as EventCategory)}>
+                        <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {EVENT_CATEGORIES.map(c => (
+                            <SelectItem key={c} value={c}>{c}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label>Description</Label>
+                      <Textarea value={description} onChange={e => setDescription(e.target.value)} required className="mt-1" rows={3} />
+                    </div>
+                    <Button type="submit" className="w-full transition-all hover:scale-[1.03]" disabled={submitting}>
+                      {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                      Create Event
+                    </Button>
+                  </form>
+                </DialogContent>
+              </Dialog>
+            )}
+          </div>
+
+          <div className="mb-6">
+            <EventSearch
+              search={search}
+              onSearchChange={setSearch}
+              selectedCategory={filterCategory}
+              onCategoryChange={setFilterCategory}
+            />
+          </div>
+
+          {loading ? (
+            <CardGridSkeleton />
+          ) : filtered.length === 0 ? (
+            <div className="glass-card rounded-2xl p-8 text-center">
+              <p className="text-muted-foreground">
+                {events.length === 0 ? 'No events yet.' : 'No events match your search.'}
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {filtered.map((ev, i) => (
+                <ScrollReveal key={ev.id} delay={i * 0.08}>
+                  <EventCard event={ev} />
+                </ScrollReveal>
+              ))}
+            </div>
+          )}
+        </div>
+        <BottomNav />
+      </div>
+    </PageTransition>
+  );
+};
+
+export default Events;
