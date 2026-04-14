@@ -1,6 +1,7 @@
 import { collection, getDocs, addDoc, query, where, serverTimestamp, deleteDoc, doc } from 'firebase/firestore';
 import { db } from './firebase';
 import type { EventRegistration } from '@/types';
+import { assertOnline } from '@/lib/network';
 
 const COLLECTION = 'registrations';
 
@@ -17,6 +18,7 @@ export const fetchRegistrationsByEvent = async (eventId: string): Promise<EventR
 };
 
 export const registerForEvent = async (data: Omit<EventRegistration, 'id' | 'registeredAt'>): Promise<string> => {
+  assertOnline();
   const docRef = await addDoc(collection(db, COLLECTION), {
     ...data,
     registeredAt: serverTimestamp(),
@@ -25,6 +27,7 @@ export const registerForEvent = async (data: Omit<EventRegistration, 'id' | 'reg
 };
 
 export const unregisterFromEvent = async (registrationId: string): Promise<void> => {
+  assertOnline();
   await deleteDoc(doc(db, COLLECTION, registrationId));
 };
 

@@ -1,23 +1,27 @@
+/* Root container */
 #root {
   max-width: 1280px;
   margin: 0 auto;
   padding: 2rem;
-  text-align: center;
 }
 
+/* Logo styling (optional, from Vite template) */
 .logo {
-  height: 6em;
-  padding: 1.5em;
+  height: 6rem;
+  padding: 1.5rem;
   will-change: filter;
-  transition: filter 300ms;
+  transition: filter 300ms ease;
 }
+
 .logo:hover {
   filter: drop-shadow(0 0 2em #646cffaa);
 }
+
 .logo.react:hover {
   filter: drop-shadow(0 0 2em #61dafbaa);
 }
 
+/* Animation (optional) */
 @keyframes logo-spin {
   from {
     transform: rotate(0deg);
@@ -27,16 +31,20 @@
   }
 }
 
+/* Reduce motion support */
 @media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
+  .logo.spin {
     animation: logo-spin infinite 20s linear;
   }
 }
 
+/* Card example (safe utility class) */
 .card {
-  padding: 2em;
+  padding: 2rem;
+  border-radius: 12px;
 }
 
+/* Small text helper */
 .read-the-docs {
   color: #888;
 }

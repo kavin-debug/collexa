@@ -6,14 +6,16 @@ import { PageTransition } from '@/components/motion/PageTransition';
 import { ScrollReveal } from '@/components/motion/ScrollReveal';
 import { CardGridSkeleton } from '@/components/LoadingSkeleton';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight, CalendarDays, MapPin, Tag } from 'lucide-react';
+import { ChevronLeft, ChevronRight, CalendarDays, Tag } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import type { CampusEvent } from '@/types';
 
 const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 const CalendarView = () => {
+  const isOnline = useOnlineStatus();
   const [events, setEvents] = useState<CampusEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -63,6 +65,12 @@ const CalendarView = () => {
               <p className="text-sm text-muted-foreground">View events by date</p>
             </div>
           </div>
+
+          {!isOnline && (
+            <div className="mb-6 rounded-xl border border-amber-200/60 bg-amber-400/20 px-4 py-3 text-sm font-medium text-amber-950">
+              Offline mode &mdash; showing saved events
+            </div>
+          )}
 
           {loading ? (
             <CardGridSkeleton count={1} />

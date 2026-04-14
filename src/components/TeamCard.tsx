@@ -8,9 +8,10 @@ interface Props {
   userId: string;
   onJoin: (teamId: string) => void;
   joining: boolean;
+  isOnline: boolean;
 }
 
-export const TeamCard = ({ team, userId, onJoin, joining }: Props) => {
+export const TeamCard = ({ team, userId, onJoin, joining, isOnline }: Props) => {
   const isMember = team.members.includes(userId);
 
   return (
@@ -28,9 +29,16 @@ export const TeamCard = ({ team, userId, onJoin, joining }: Props) => {
           {isMember ? (
             <span className="inline-flex items-center rounded-full bg-success/10 px-3 py-1 text-xs font-semibold text-success">Joined ✓</span>
           ) : (
-            <Button size="sm" onClick={() => onJoin(team.id)} disabled={joining} className="rounded-xl text-xs font-semibold transition-all hover:scale-[1.03]">
-              Join Team
-            </Button>
+            <span title={!isOnline ? 'Offline mode - reconnect to join this team' : undefined}>
+              <Button
+                size="sm"
+                onClick={() => onJoin(team.id)}
+                disabled={joining || !isOnline}
+                className="rounded-xl text-xs font-semibold transition-all hover:scale-[1.03]"
+              >
+                Join Team
+              </Button>
+            </span>
           )}
         </div>
       </div>

@@ -4,16 +4,17 @@ import { useAuth } from '@/context/AuthContext';
 import { Navbar } from '@/components/Navbar';
 import { BottomNav } from '@/components/BottomNav';
 import { TeamCard } from '@/components/TeamCard';
-import { Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import type { Team } from '@/types';
 import { PageTransition } from '@/components/motion/PageTransition';
 import { ScrollReveal } from '@/components/motion/ScrollReveal';
 import { CardGridSkeleton } from '@/components/LoadingSkeleton';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 
 const Teams = () => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const isOnline = useOnlineStatus();
   const [teams, setTeams] = useState<Team[]>([]);
   const [loading, setLoading] = useState(true);
   const [joining, setJoining] = useState(false);
@@ -58,7 +59,7 @@ const Teams = () => {
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {teams.map((t, i) => (
                 <ScrollReveal key={t.id} delay={i * 0.08}>
-                  <TeamCard team={t} userId={user!.uid} onJoin={handleJoin} joining={joining} />
+                  <TeamCard team={t} userId={user!.uid} onJoin={handleJoin} joining={joining} isOnline={isOnline} />
                 </ScrollReveal>
               ))}
             </div>

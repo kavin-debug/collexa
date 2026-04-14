@@ -17,10 +17,12 @@ import { EVENT_CATEGORIES, type CampusEvent, type EventCategory } from '@/types'
 import { PageTransition } from '@/components/motion/PageTransition';
 import { ScrollReveal } from '@/components/motion/ScrollReveal';
 import { CardGridSkeleton } from '@/components/LoadingSkeleton';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 
 const Events = () => {
   const { user, isAdmin } = useAuth();
   const { toast } = useToast();
+  const isOnline = useOnlineStatus();
   const [events, setEvents] = useState<CampusEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
@@ -76,9 +78,15 @@ const Events = () => {
             <h1 className="section-title mb-0">Events</h1>
             {isAdmin && (
               <Dialog open={open} onOpenChange={setOpen}>
-                <DialogTrigger asChild>
-                  <Button className="transition-all hover:scale-[1.03]"><Plus className="mr-1 h-4 w-4" /> Add Event</Button>
-                </DialogTrigger>
+                {isOnline ? (
+                  <DialogTrigger asChild>
+                    <Button className="transition-all hover:scale-[1.03]"><Plus className="mr-1 h-4 w-4" /> Add Event</Button>
+                  </DialogTrigger>
+                ) : (
+                  <span title="Offline mode - reconnect to create events">
+                    <Button className="transition-all hover:scale-[1.03]" disabled><Plus className="mr-1 h-4 w-4" /> Add Event</Button>
+                  </span>
+                )}
                 <DialogContent className="glass-card border-border">
                   <DialogHeader>
                     <DialogTitle>New Event</DialogTitle>
@@ -111,7 +119,7 @@ const Events = () => {
                       <Label>Description</Label>
                       <Textarea value={description} onChange={e => setDescription(e.target.value)} required className="mt-1" rows={3} />
                     </div>
-                    <Button type="submit" className="w-full transition-all hover:scale-[1.03]" disabled={submitting}>
+                    <Button type="submit" className="w-full transition-all hover:scale-[1.03]" disabled={submitting || !isOnline}>
                       {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                       Create Event
                     </Button>

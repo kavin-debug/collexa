@@ -15,12 +15,14 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft, Loader2, CheckCircle2 } from 'lucide-react';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import type { CampusEvent } from '@/types';
 
 const EventRegister = () => {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
   const { toast } = useToast();
+  const isOnline = useOnlineStatus();
   const [event, setEvent] = useState<CampusEvent | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -106,6 +108,12 @@ const EventRegister = () => {
                 <h2 className="text-xl font-bold text-foreground mb-1">Register for {event.title}</h2>
                 <p className="text-sm text-muted-foreground mb-6">{event.date} · {event.category}</p>
 
+                {!isOnline && (
+                  <div className="mb-6 rounded-xl border border-amber-200/60 bg-amber-400/20 px-4 py-3 text-sm font-medium text-amber-950">
+                    Offline mode &mdash; reconnect to register for this event
+                  </div>
+                )}
+
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div>
                     <Label>Full Name</Label>
@@ -130,7 +138,7 @@ const EventRegister = () => {
                       </SelectContent>
                     </Select>
                   </div>
-                  <Button type="submit" className="w-full transition-all hover:scale-[1.03]" disabled={submitting}>
+                  <Button type="submit" className="w-full transition-all hover:scale-[1.03]" disabled={submitting || !isOnline}>
                     {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     Register & Get Ticket
                   </Button>

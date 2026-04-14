@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/context/AuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { OfflineBanner } from "@/components/OfflineBanner";
 import { lazy, Suspense } from "react";
 import { Loader2 } from "lucide-react";
 
@@ -38,6 +39,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
+          <OfflineBanner />
           <Suspense fallback={<PageLoader />}>
             <Routes>
               <Route path="/" element={<Index />} />

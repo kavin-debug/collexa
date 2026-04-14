@@ -6,14 +6,16 @@ import { fetchUserProfile } from '@/services/users';
 import { Navbar } from '@/components/Navbar';
 import { BottomNav } from '@/components/BottomNav';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Calendar, Tag, User, MapPin, Users, Loader2 } from 'lucide-react';
+import { ArrowLeft, Calendar, Tag, User, MapPin, Users } from 'lucide-react';
 import type { CampusEvent } from '@/types';
 import { PageTransition } from '@/components/motion/PageTransition';
 import { ScrollReveal } from '@/components/motion/ScrollReveal';
 import { DetailSkeleton } from '@/components/LoadingSkeleton';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 
 const EventDetails = () => {
   const { id } = useParams<{ id: string }>();
+  const isOnline = useOnlineStatus();
   const [event, setEvent] = useState<CampusEvent | null>(null);
   const [loading, setLoading] = useState(true);
   const [regCount, setRegCount] = useState(0);
@@ -62,11 +64,22 @@ const EventDetails = () => {
                   <span className="flex items-center gap-1"><Users className="h-4 w-4" />{regCount} registered</span>
                 </div>
                 <p className="leading-relaxed text-foreground mb-6">{event.description}</p>
-                <Link to={`/events/${id}/register`}>
-                  <Button className="w-full sm:w-auto transition-all hover:scale-[1.03]">
-                    Register for Event
-                  </Button>
-                </Link>
+                {isOnline ? (
+                  <Link to={`/events/${id}/register`}>
+                    <Button className="w-full sm:w-auto transition-all hover:scale-[1.03]">
+                      Register for Event
+                    </Button>
+                  </Link>
+                ) : (
+                  <div className="space-y-2">
+                    <span title="Offline mode - reconnect to register for this event">
+                      <Button className="w-full sm:w-auto transition-all hover:scale-[1.03]" disabled>
+                        Register for Event
+                      </Button>
+                    </span>
+                    <p className="text-sm text-muted-foreground">Registration requires an internet connection.</p>
+                  </div>
+                )}
               </div>
             </ScrollReveal>
           )}
