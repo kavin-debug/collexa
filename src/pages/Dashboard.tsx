@@ -51,16 +51,26 @@ const Dashboard = () => {
     load();
   }, [user, isStudent]);
 
-  const upcoming = events.filter(e => new Date(e.date) >= new Date());
+  // ✅ NEW: FILTER ACTIVE EVENTS
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const activeEvents = events.filter((e) => {
+    const eventDate = new Date(e.date + "T00:00:00");
+    return eventDate >= today;
+  });
+
+  const upcoming = activeEvents;
   const upcomingCount = upcoming.length;
 
-  const categoryData = events.reduce<Record<string, number>>((acc, e) => {
+  // ✅ FIXED: USE activeEvents
+  const categoryData = activeEvents.reduce<Record<string, number>>((acc, e) => {
     acc[e.category] = (acc[e.category] || 0) + 1;
     return acc;
   }, {});
+
   const pieData = Object.entries(categoryData).map(([name, value]) => ({ name, value }));
 
-  // Student stats
   const studentStats = [
     { icon: CalendarDays, label: 'Upcoming Events', value: upcomingCount, iconClass: 'text-primary icon-pulse' },
     { icon: Ticket, label: 'My Registrations', value: myEventCount, iconClass: 'text-accent icon-pulse' },
@@ -68,9 +78,9 @@ const Dashboard = () => {
     { icon: Sparkles, label: 'AI Match Score', value: insight?.score ?? '—', iconClass: 'text-accent icon-glow', sub: insight?.message },
   ];
 
-  // Admin stats
+  // ✅ FIXED: activeEvents instead of events
   const adminStats = [
-    { icon: CalendarDays, label: 'Total Events', value: events.length, iconClass: 'text-primary icon-pulse' },
+    { icon: CalendarDays, label: 'Total Events', value: activeEvents.length, iconClass: 'text-primary icon-pulse' },
     { icon: Users, label: 'Active Teams', value: teams.length, iconClass: 'text-accent icon-pulse' },
     { icon: Activity, label: 'Upcoming', value: upcomingCount, iconClass: 'text-success icon-pulse' },
     { icon: TrendingUp, label: 'Categories', value: Object.keys(categoryData).length, iconClass: 'text-accent icon-glow' },
@@ -78,7 +88,6 @@ const Dashboard = () => {
 
   const stats = isAdmin ? adminStats : studentStats;
 
-  // Student quick actions
   const studentActions = [
     { to: '/events', label: 'Browse Events', icon: CalendarDays },
     { to: '/calendar', label: 'Calendar', icon: Activity },
@@ -86,7 +95,6 @@ const Dashboard = () => {
     { to: '/teams', label: 'Teams', icon: Users },
   ];
 
-  // Admin quick actions
   const adminActions = [
     { to: '/events', label: 'Manage Events', icon: CalendarDays },
     { to: '/admin', label: 'Admin Panel', icon: Sparkles },
@@ -103,6 +111,7 @@ const Dashboard = () => {
         <div className="page-container relative">
           <FloatingOrbs />
           <div className="relative z-10">
+
             <div className="mb-6 flex items-center justify-between">
               <div>
                 <h1 className="section-title mb-0">
@@ -141,19 +150,6 @@ const Dashboard = () => {
                   ))}
                 </div>
 
-                {/* Quick Actions */}
-                <ScrollReveal>
-                  <div className="mb-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
-                    {actions.map((action) => (
-                      <Link key={action.to} to={action.to} className="glass-card rounded-xl p-4 text-center transition-all hover:-translate-y-1 hover:bg-muted/20">
-                        <action.icon className="mx-auto mb-2 h-5 w-5 text-primary" />
-                        <span className="text-xs font-medium text-foreground">{action.label}</span>
-                      </Link>
-                    ))}
-                  </div>
-                </ScrollReveal>
-
-                {/* Upcoming Events for Students */}
                 {isStudent && upcoming.length > 0 && (
                   <ScrollReveal>
                     <div className="mb-8">
@@ -172,7 +168,6 @@ const Dashboard = () => {
                   </ScrollReveal>
                 )}
 
-                {/* Category chart for admin */}
                 {isAdmin && pieData.length > 0 && (
                   <ScrollReveal>
                     <div className="glass-card-glow rounded-2xl p-6">
@@ -180,12 +175,13 @@ const Dashboard = () => {
                       <div className="h-72">
                         <ResponsiveContainer width="100%" height="100%">
                           <PieChart>
-                            <Pie data={pieData} cx="50%" cy="50%" outerRadius={100} dataKey="value" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
+                            <Pie data={pieData} cx="50%" cy="50%" outerRadius={100} dataKey="value"
+                              label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
                               {pieData.map((_, i) => (
                                 <Cell key={i} fill={COLORS[i % COLORS.length]} />
                               ))}
                             </Pie>
-                            <Tooltip contentStyle={{ background: 'hsl(222 40% 10%)', border: '1px solid hsl(222 20% 18%)', borderRadius: '0.5rem', color: 'hsl(210 20% 92%)' }} />
+                            <Tooltip />
                             <Legend />
                           </PieChart>
                         </ResponsiveContainer>
@@ -194,9 +190,9 @@ const Dashboard = () => {
                   </ScrollReveal>
                 )}
 
-                {events.length === 0 && teams.length === 0 && (
+                {activeEvents.length === 0 && teams.length === 0 && (
                   <div className="glass-card rounded-2xl p-8 text-center">
-                    <p className="text-muted-foreground">No data yet. Configure your Firebase project and add events and teams to get started.</p>
+                    <p className="text-muted-foreground">No data yet.</p>
                   </div>
                 )}
               </>

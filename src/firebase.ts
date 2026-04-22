@@ -4,13 +4,13 @@ import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDRRCUcFnvnSgOXiEYs_mdwfsHMP-_9ti4",
-  authDomain: "campus-connect-f1f29.firebaseapp.com",
-  projectId: "campus-connect-f1f29",
-  storageBucket: "campus-connect-f1f29.firebasestorage.app",
-  messagingSenderId: "15818696545",
-  appId: "1:15818696545:web:09b3687a3cd8330e1dc720",
-  measurementId: "G-MFTTFQP953",
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID, // optional
 };
 
 export const app = initializeApp(firebaseConfig);

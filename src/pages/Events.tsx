@@ -63,11 +63,24 @@ const Events = () => {
     }
   };
 
-  const filtered = events.filter((ev) => {
-    const matchesSearch = !search || ev.title.toLowerCase().includes(search.toLowerCase()) || ev.description.toLowerCase().includes(search.toLowerCase());
-    const matchesCategory = filterCategory === 'All' || ev.category === filterCategory;
-    return matchesSearch && matchesCategory;
-  });
+const filtered = events.filter((ev) => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const eventDate = new Date(ev.date + "T00:00:00");
+
+  const notExpired = eventDate >= today;
+
+  const matchesSearch =
+    !search ||
+    ev.title.toLowerCase().includes(search.toLowerCase()) ||
+    ev.description.toLowerCase().includes(search.toLowerCase());
+
+  const matchesCategory =
+    filterCategory === 'All' || ev.category === filterCategory;
+
+  return notExpired && matchesSearch && matchesCategory;
+});
 
   return (
     <PageTransition>
